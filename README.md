@@ -15,4 +15,5 @@
 - [SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://arxiv.org/pdf/2106.09305.pdf)
 
 ## Reference
+- [Paperswithcode - TSF Benchmark](https://paperswithcode.com/sota/time-series-forecasting-on-etth1-24?p=informer-beyond-efficient-transformer-for)
 - [LSTF Linear](https://github.com/cure-lab/LTSF-Linear)
