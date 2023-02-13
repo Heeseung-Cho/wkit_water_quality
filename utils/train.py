@@ -21,7 +21,6 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
     for e in range(epochs):
         since = time.time()
         running_loss = 0       
-        running_accuracy = 0 
         
         # training loop
         model.train()
@@ -35,7 +34,7 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
             # forward
             
             outputs = model(inputs)
-            outputs = outputs.flatten()
+            outputs = outputs[:,:,-1].flatten()
             loss = criterion(outputs, labels)            
 
             # backward
@@ -45,7 +44,6 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
     
         model.eval()
         val_loss = 0
-        val_accuracy = 0
         # validation loop
         with torch.no_grad():
             for _, data in enumerate(tqdm(val_loader)):                
@@ -55,7 +53,7 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
 
                 # forward
                 outputs = model(inputs)
-                outputs = outputs.flatten()
+                outputs = outputs[:,:,-1].flatten()
                 # evaluation metrics
                 # loss
                 loss = criterion(outputs, labels)
@@ -68,10 +66,10 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
 
         ## Warmup and Earlystopping
         if e + 1 > warmup:
-            if min_loss - (val_loss / len(val_loader)) > 0.001 :
+            if min_loss - (val_loss / len(val_loader)) > 0.0001 :
                 print('Loss Decreasing {:.3f} >> {:.3f} . Save model to {} '.format(min_loss, (val_loss / len(val_loader)), path))
                 min_loss = (val_loss / len(val_loader))            
-                torch.save(model.state_dict(), path)
+#                torch.save(model.state_dict(), path)
                 not_improve = 0
                 
             else:
@@ -94,6 +92,7 @@ def fit(epochs, model, train_loader, val_loader, criterion, optimizer, path, sch
             metrics_log = {"train_epoch": e + 1,
                         "Train Loss": running_loss / len(train_loader),
                         "Val Loss": val_loss / len(val_loader),
+                        "Learning Rate":scheduler.optimizer.param_groups[0]['lr'],
                         "Time": (time.time() - since) / 60
                         }
             wandb.log(metrics_log)
@@ -112,6 +111,6 @@ def test(model, test_loader, device="cuda"):
             inputs, _ = data                    
             inputs = inputs.to(device).float()            
             outputs = model(inputs)
-            outputs = outputs.flatten()
+            outputs = outputs[:,:,-1].flatten()
             Pred.extend(outputs.detach().cpu().numpy())                    
-    return Pred
+    return np.array(Pred)
